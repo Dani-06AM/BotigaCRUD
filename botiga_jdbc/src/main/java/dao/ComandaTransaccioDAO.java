@@ -18,11 +18,15 @@ public class ComandaTransaccioDAO {
             conn.setAutoCommit(false);
             try {
                 int comandaId;
-                try (PreparedStatement ps = conn.prepareStatement(insCom)) {
+                try (PreparedStatement ps = conn.prepareStatement(insCom, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setInt(1, clientId);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        rs.next();
-                        comandaId = rs.getInt(1);
+                    ps.executeUpdate();
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            comandaId = rs.getInt(1);
+                        } else {
+                            throw new SQLException("Failed to get generated key");
+                        }
                     }
                 }
                 BigDecimal total = BigDecimal.ZERO;
